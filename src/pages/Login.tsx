@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/context/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [whatsAppNumber, setWhatsAppNumber] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("")
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ const Login = () => {
     } else {
       login(email, password);
     }
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -31,10 +33,12 @@ const Login = () => {
         <div className="bg-background rounded-3xl shadow-elevated p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground">
-              {isSignup ? 'Create Account' : 'Welcome Back'} 🪻
+              {isSignup ? "Create Account" : "Welcome Back"} 🪻
             </h1>
             <p className="text-sm text-muted-foreground mt-2">
-              {isSignup ? 'Join the sweetRose family' : 'Sign in to your account'}
+              {isSignup
+                ? "Join the sweetRose family"
+                : "Sign in to your account"}
             </p>
           </div>
 
@@ -44,7 +48,7 @@ const Login = () => {
                 type="text"
                 placeholder="Your name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 required
                 className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
@@ -53,33 +57,52 @@ const Login = () => {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
+            {isSignup && (
+              <input
+                type="number"
+                placeholder="WhatsApp Number"
+                value={whatsAppNumber}
+                onChange={(e) => setWhatsAppNumber(e.target.value)}
+                className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            )}
             <input
               type="password"
               placeholder="Password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
+            {isSignup && (
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            )}
             <button
               type="submit"
               className="w-full py-3 rounded-full gradient-primary text-primary-foreground font-bold hover:opacity-90 transition-opacity mt-2"
             >
-              {isSignup ? 'Sign Up' : 'Sign In'}
+              {isSignup ? "Sign Up" : "Sign In"}
             </button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+            {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
               onClick={() => setIsSignup(!isSignup)}
               className="text-primary font-semibold hover:underline"
             >
-              {isSignup ? 'Sign In' : 'Sign Up'}
+              {isSignup ? "Sign In" : "Sign Up"}
             </button>
           </p>
         </div>
