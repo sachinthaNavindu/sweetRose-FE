@@ -1,6 +1,6 @@
 export interface RegisterData{
     userName:string
     email:string
-    contactNumber:string
+    whatsAppNumber:string
     password:string
 }

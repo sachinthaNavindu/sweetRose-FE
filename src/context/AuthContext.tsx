@@ -1,36 +1,84 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { User } from '@/types';
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { User } from "@/types";
+import { RegisterData } from "@/types/authTypes";
+import authService from "@/service/auth";
+import api from "@/service/api";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => void;
-  signup: (name: string, email: string, password: string) => void;
+  signup: (userData: RegisterData) => Promise<string>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = useCallback((email: string, _password: string) => {
-    setUser({ id: '1', name: email.split('@')[0], email });
+  const refreshUser = useCallback(async()=>{
+    try{
+      const resp = await api.get("/auth/me")
+      setUser(resp.data.user)
+    }catch{
+      setUser(null)
+    }
+  },[])
+
+  const login = useCallback(async(email: string, password: string) => {
+    try{
+      await authService.login(email,password)
+      await refreshUser()
+    }catch(error:any){
+      const message = error.response?.data?.message || "Login failed"
+      throw new Error(message)
+    }
+  }, [refreshUser]);
+
+  const signup = useCallback(async (userData: RegisterData) => {
+    try {
+      const resp = await authService.register(userData);
+      return resp.message
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Signup failed";
+      throw new Error(message);
+    }
   }, []);
 
-  const signup = useCallback((name: string, email: string, _password: string) => {
-    setUser({ id: '1', name, email });
+   const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+      setUser(null);
+    } catch {
+      setUser(null);
+    }
   }, []);
-
-  const logout = useCallback(() => setUser(null), []);
 
   const updateProfile = useCallback((data: Partial<User>) => {
-    setUser(prev => prev ? { ...prev, ...data } : null);
+    setUser((prev) => (prev ? { ...prev, ...data } : null));
   }, []);
 
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, signup, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        signup,
+        logout,
+        updateProfile,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -38,6 +86,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };

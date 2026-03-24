@@ -2,25 +2,59 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { RegisterData } from "@/types/authTypes";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
-  const [whatsAppNumber, setWhatsAppNumber] = useState(null);
+  const [whatsAppNumber, setWhatsAppNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignup) {
-      signup(name, email, password);
-    } else {
-      login(email, password);
+
+    const data: RegisterData = {
+      userName: name,
+      email: email,
+      whatsAppNumber: whatsAppNumber,
+      password: password,
+    };
+
+    try {
+      if (isSignup) {
+        if (password !== confirmPassword)
+          return toast({
+            title: "Password does not match.",
+            description: "Check your password",
+            variant: "default",
+          });
+
+        await signup(data);
+        setIsSignup(false);
+        toast({
+          title: "Account created successfully",
+          description: "You can now log in with your credentials",
+          variant: "default",
+        });
+      } else {
+        await login(email, password);
+        navigate("/");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-    navigate("/");
   };
 
   return (
@@ -50,7 +84,11 @@ const Login = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
                 className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                minLength={4}
+                pattern="[A-Za-z ]+"
+                title="Name should contain only letters"
               />
             )}
             <input
@@ -59,34 +97,59 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             {isSignup && (
               <input
-                type="number"
+                required={isSignup}
+                type="tel"
                 placeholder="WhatsApp Number"
                 value={whatsAppNumber}
-                onChange={(e) => setWhatsAppNumber(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  setWhatsAppNumber(value);
+                }}
                 className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             )}
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            {isSignup && (
+            <div className="relative">
               <input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 required
-                className="px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {isSignup && (
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required={isSignup}
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             )}
             <button
               type="submit"
