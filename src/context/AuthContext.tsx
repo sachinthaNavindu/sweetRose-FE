@@ -21,19 +21,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const refreshUser = useCallback(async()=>{
-    try{
-      const resp = await api.get("/auth/me")
-      setUser(resp.data.user)
-    }catch{
-      setUser(null)
-    }
-  },[])
-
+const refreshUser = useCallback(async () => {
+  try {
+    console.log("refersh user is triggered")
+    const resp = await api.get("/auth/me", { _silent: true }as any);
+    console.log("RefreshUser : ",resp)
+    setUser(resp.data.user);
+  } catch {
+    setUser(null);
+  }
+}, []);
   const login = useCallback(async(email: string, password: string) => {
     try{
-      await authService.login(email,password)
-      await refreshUser()
+      const resp = await authService.login(email,password)
+      setUser(resp.user)
     }catch(error:any){
       const message = error.response?.data?.message || "Login failed"
       throw new Error(message)

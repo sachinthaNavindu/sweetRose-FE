@@ -4,9 +4,11 @@ import { ArrowRight, Sparkles, Truck, Leaf } from "lucide-react";
 import heroCake from "@/assets/hero-cake.jpg";
 import CakeCard from "@/components/CakeCard";
 import { showcaseCakes } from "@/data/cakes";
+import { useEffect } from "react";
 
 const Index = () => {
   const featured = showcaseCakes.slice(0, 3);
+
 
   return (
     <>

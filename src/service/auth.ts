@@ -12,6 +12,12 @@ const authService = {
             email,
             password
         })
+        console.log("login return data",resp)
+        return resp.data
+    },
+
+    me:async()=>{
+        const resp = await api.get("/auth/me")
         return resp.data
     }
 }

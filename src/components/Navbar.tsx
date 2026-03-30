@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, User, LogOut } from 'lucide-react';
 import { useTray } from '@/context/TrayContext';
@@ -17,6 +17,13 @@ const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(()=>{
+    if(user){
+      console.log("refersh user : ",user)
+      console.log(user.name)
+    }
+  },[user])
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -44,7 +51,7 @@ const Navbar = () => {
             <div className="hidden md:flex items-center gap-3">
               <Link to="/profile" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                 <User size={16} />
-                {user?.name}
+                {user?.name || "USER"}
               </Link>
               <button onClick={logout} className="text-muted-foreground hover:text-primary transition-colors">
                 <LogOut size={16} />

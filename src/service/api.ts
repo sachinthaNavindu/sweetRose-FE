@@ -1,34 +1,28 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios"
+import axios, { AxiosRequestConfig } from "axios";
 
-const API_BASE_URL = ""
+interface SilentAxiosRequestConfig extends AxiosRequestConfig {
+  _silent?: boolean;
+}
+
+const API_BASE_URL = "http://localhost:5000/sweet-rose";
 
 const api = axios.create({
-    baseURL:API_BASE_URL,
-    headers:{
-        "Content-Type":"application/json"
-    },withCredentials:true
-})
-
-
-
-api.interceptors.request.use(
-    (config) => {
-        if (!config.headers["Content-Type"]) {
-            config.headers["Content-Type"] = "application/json";
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
 
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        if (error.response?.status === 401) {
-            window.location.href = "/login";
-        }
-        return Promise.reject(error);
+  (response) => response,
+  async (error) => {
+    const config = error.config as SilentAxiosRequestConfig;
+
+    if (error.response?.status === 401 && !config._silent) {
+      window.location.href = "/login";
     }
+
+    return Promise.reject(error);
+  }
 );
 
-export default api
+export default api;
