@@ -4,3 +4,9 @@ export interface RegisterData{
     whatsAppNumber:string
     password:string
 }
+
+export interface UpdateUserData{
+    userName:string
+    email:string
+    whatsAppNumber:string
+}

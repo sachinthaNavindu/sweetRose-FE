@@ -1,9 +1,8 @@
-import { RegisterData } from "@/types/authTypes";
+import { RegisterData, UpdateUserData } from "@/types/authTypes";
 import api from "./api";
 
 const authService = {
     register:async(userData:RegisterData)=>{
-        console.log(userData)
         const resp = await api.post("/auth/register",userData)
         return resp.data
     },
@@ -12,12 +11,15 @@ const authService = {
             email,
             password
         })
-        console.log("login return data",resp)
         return resp.data
     },
 
     me:async()=>{
         const resp = await api.get("/auth/me")
+        return resp.data
+    },
+    updateUser:async(userData:UpdateUserData)=>{
+        const resp = await api.post("auth/updateUser",userData)
         return resp.data
     }
 }

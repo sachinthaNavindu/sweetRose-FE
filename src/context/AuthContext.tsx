@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { User } from "@/types";
-import { RegisterData } from "@/types/authTypes";
+import { RegisterData, UpdateUserData } from "@/types/authTypes";
 import authService from "@/service/auth";
 import api from "@/service/api";
+import { error } from "console";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  loading:boolean
   login: (email: string, password: string) => void;
   signup: (userData: RegisterData) => Promise<string>;
   logout: () => void;
-  updateProfile: (data: Partial<User>) => void;
+  updateProfile: (data: Partial<User>) => Promise<string>;
   refreshUser: () => Promise<void>;
 }
 
@@ -20,15 +22,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading,setLoading] = useState(true)
 
 const refreshUser = useCallback(async () => {
   try {
-    console.log("refersh user is triggered")
+    setLoading(true)
     const resp = await api.get("/auth/me", { _silent: true }as any);
-    console.log("RefreshUser : ",resp)
     setUser(resp.data.user);
   } catch {
     setUser(null);
+  }finally{
+    setLoading(false)
   }
 }, []);
   const login = useCallback(async(email: string, password: string) => {
@@ -60,8 +64,15 @@ const refreshUser = useCallback(async () => {
     }
   }, []);
 
-  const updateProfile = useCallback((data: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...data } : null));
+  const updateProfile = useCallback(async(userData:UpdateUserData) => {
+    try{
+      const resp = await authService.updateUser(userData)
+      setUser(resp.user)
+      return resp.message
+    }catch(err:any){
+      const message = err.response?.data?.message || "User Update failed"
+      throw new Error(message)
+    }
   }, []);
 
   useEffect(() => {
@@ -73,6 +84,7 @@ const refreshUser = useCallback(async () => {
       value={{
         user,
         isAuthenticated: !!user,
+        loading,
         login,
         signup,
         logout,
