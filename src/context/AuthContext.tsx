@@ -3,7 +3,8 @@ import { User } from "@/types";
 import { RegisterData, UpdateUserData } from "@/types/authTypes";
 import authService from "@/service/auth";
 import api from "@/service/api";
-import { error } from "console";
+import type { SilentAxiosRequestConfig } from "@/service/api";
+
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 const refreshUser = useCallback(async () => {
   try {
     setLoading(true)
-    const resp = await api.get("/auth/me", { _silent: true }as any);
+    const resp = await api.get("/auth/me", { _silent: true }as SilentAxiosRequestConfig);
     setUser(resp.data.user);
   } catch {
     setUser(null);

@@ -1,7 +1,8 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-interface SilentAxiosRequestConfig extends AxiosRequestConfig {
+export interface SilentAxiosRequestConfig extends AxiosRequestConfig {
   _silent?: boolean;
+  _retry?: boolean;
 }
 
 const API_BASE_URL = "http://localhost:5000/sweet-rose";
@@ -14,11 +15,20 @@ const api = axios.create({
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const config = error.config as SilentAxiosRequestConfig;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-    if (error.response?.status === 401 && !config._silent) {
-      window.location.href = "/login";
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        await api.post("/token/refresh-token", {}, { withCredentials: true });
+
+        return api({ ...originalRequest, withCredentials: true });
+      } catch (refreshError) {
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
 
     return Promise.reject(error);
