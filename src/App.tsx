@@ -12,6 +12,7 @@ import SpecialOrders from "./pages/SpecialOrders";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/showcase" element={<Showcase />} />
                 <Route path="/special-orders" element={<SpecialOrders />} />
+                <Route path="/admin" element={<AdminDashboard/>}/>
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
